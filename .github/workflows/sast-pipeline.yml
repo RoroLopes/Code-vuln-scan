@@ -22,7 +22,7 @@ jobs:
                 semgrep --config p/ci --output semgrep-result.json --json
 
             - name: Upload scan results as artifacts
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                 name: semgrep-result
                 path: semgrep-result.json --json
