@@ -6,25 +6,34 @@ on:
             - main
 
 jobs:
-    semgrep-scan:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
+  analyze:
+    name: Analyze code
+    runs-on: ubuntu-latest
 
-            - name: Setup Semgrep
-              run: |
-                curl -sSL https://github.com/returntocorp/semgrep/releases/download/v1.0.0/semgrep-linux-amd64-v1.0.0.tar.gz | tar xz
-                sudo mv semgrep /usr/local/bin/
+    strategy:
+      matrix:
+        language: [javascript]
 
-            - name: Run SAST Semgrep scan
-              run: |
-                semgrep --config p/ci --output semgrep-result.json --json
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Upload scan results as artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                name: semgrep-result
-                path: semgrep-result.json --json
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{matrix.language}}
 
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          output: results.sarif
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-results
+          path: results.sarif
 
